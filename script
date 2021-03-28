@@ -1,0 +1,26 @@
+#!/bin/bash
+pushkey="XXXXXXXXXXXXXXXXXXXXXxx" # Mettre ici la clé API (Dans votre compte client : "Mes Options" / "Nofification par SMS"
+pushuser="XXXXXXXX" # Votre Identifiant client (identifiant d'accès à votre compte free mobile)
+# Format content
+pushmessage="Recuperation de "
+pushmessage+=$sonarr_series_title
+pushmessage+=" - S"
+#pushmessage+=$sonarr_episodefile_seasonnumber
+pushmessage+=$sonarr_release_seasonnumber
+pushmessage+=":E"
+pushmessage+=$sonarr_release_episodenumbers
+pushmessage+=". Release venant de: "
+pushmessage+=$sonarr_release_indexer
+pushmessage+=". Taille de Fichier: "
+pushmessage+=$(expr $sonarr_release_size / 1048576)
+pushmessage+="Mb. Type de qualite: "
+pushmessage+=$sonarr_release_quality
+
+pushbody=$( jq -n \
+    --arg pass "$pushkey" \
+    --arg user "$pushuser" \
+    --arg message "$pushmessage" \
+    '{pass: $pass, user: $user, msg: $message}' )
+
+# Send push notification   
+curl --header 'Content-Type: application/json; charset=utf-8' --data-binary "$pushbody" --request POST "https://smsapi.free-mobile.fr/sendmsg"
